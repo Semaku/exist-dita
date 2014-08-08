@@ -5,7 +5,7 @@
   <groupId>org.exist.xquery.modules</groupId>
   <artifactId>exist-dita</artifactId>
   <packaging>jar</packaging>
-  <version>0.1</version>
+  <version>1.0.0</version>
   <name>exist-dita</name>
   <description>eXist DB extension module for DITA processing</description>
 
@@ -39,7 +39,7 @@
 
   <repositories>
     <repository>
-      <id>eXistDB</id>
+      <id>exist</id>
       <url>https://raw.github.com/eXist-db/mvn-repo/master/</url>
     </repository>
   </repositories>
