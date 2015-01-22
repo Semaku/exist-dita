@@ -1,11 +1,14 @@
 package org.exist.xquery.modules.dita;
 
-import org.apache.log4j.Logger;
-import org.dita.dost.invoker.CommandLineInvoker;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.LineIterator;
+import org.apache.commons.lang3.SystemUtils;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,22 +20,19 @@ import java.util.List;
  */
 public class RunDitaOTFunction extends BasicFunction {
 
-    protected final static Logger log = Logger.getLogger(RunDitaOTFunction.class);
-
-    public final static String PARAMETER_INPUT = "i";
-    public final static String PARAMETER_TYPE = "transtype";
+    public static final String UTF_8 = "UTF-8";
+    public final static String DITA_HOME = "DITA_HOME";
+    public final static String DITA_DIR = System.getenv(DITA_HOME);
+    public final static String DITA_EXECUTABLE = DITA_DIR + File.separatorChar + "bin" + File.separatorChar +
+            "dita" + (SystemUtils.IS_OS_WINDOWS ? ".bat" : "");
 
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("run-dita-ot", DitaModule.NAMESPACE_URI, DitaModule.PREFIX),
             "A function to run DITA OT processing.",
             new SequenceType[]{
-                    new FunctionParameterSequenceType(PARAMETER_INPUT, Type.STRING, Cardinality.EXACTLY_ONE,
-                            "Specifies the master file for your documentation project. Typically this is a DITA map, however it also can be a DITA topic if you want to transform a single DITA file."),
-                    new FunctionParameterSequenceType(PARAMETER_TYPE, Type.STRING, Cardinality.EXACTLY_ONE,
-                            "Specifies the output format. By default, the following values are available: (docbook, eclipsehelp, eclipsecontent, htmlhelp, javahelp, legacypdf, odt, pdf, wordrtf, troff, xhtml)"),
                     new FunctionParameterSequenceType("parameters", Type.STRING, Cardinality.ZERO_OR_MORE,
-                            "The parameters in format '/parameter-name:value'. " +
-                                    "The documentation is available here: http://dita-ot.github.io/1.8/readme/dita-ot_java_properties.html"
+                            "The parameters in format 'ant-parameter-name=value'. " +
+                                    "The documentation is available here: http://www.dita-ot.org/2.0/readme/dita-ot_ant_properties.html"
                     )
             },
             new SequenceType(Type.ITEM, Cardinality.EMPTY)
@@ -44,31 +44,47 @@ public class RunDitaOTFunction extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] sequences, Sequence sequence) throws XPathException {
-        String[] parameters = prepareParameters(sequences);
-
-        log.info("Running DITA OT with parameters: " + Arrays.toString(parameters));
-        CommandLineInvoker.main(parameters);
-        log.info("Completed DITA OT processing");
-
-        return (Sequence.EMPTY_SEQUENCE);
+        return staticEval(sequences, sequence);
     }
 
-    private String[] prepareParameters(Sequence[] sequences) throws XPathException {
-        List<String> parameters = new ArrayList<>();
-        parameters.add(formatParameter(PARAMETER_INPUT, sequences[0].getStringValue()));
-        parameters.add(formatParameter(PARAMETER_TYPE, sequences[1].getStringValue()));
+    protected static Sequence staticEval(Sequence[] sequences, Sequence sequence) throws XPathException {
+        if (null == DITA_DIR) {
+            String errorMessage = DITA_HOME + " environmental variable is not found";
+            LOG.fatal(errorMessage);
+            throw new XPathException(errorMessage);
+        }
 
-        if (!sequences[2].isEmpty()) {
-            SequenceIterator iterator = sequences[2].iterate();
+        LOG.info("Running DITA OT with parameters: " + Arrays.toString(sequences));
+        ProcessBuilder pb = new ProcessBuilder(getDitaCommand(sequences)).directory(new File(DITA_DIR));
+        try {
+            Process process = pb.start();
+            LineIterator iterator = IOUtils.lineIterator(process.getInputStream(), UTF_8);
             while (iterator.hasNext()) {
-                Item next = iterator.nextItem();
-                parameters.add(next.getStringValue());
+                LOG.debug(iterator.next());
+            }
+            iterator = IOUtils.lineIterator(process.getErrorStream(), UTF_8);
+            while (iterator.hasNext()) {
+                LOG.error(iterator.next());
+            }
+            LOG.info("Completed DITA OT processing" );
+        } catch (IOException e) {
+            LOG.error("DITA OT process failed", e);
+        }
+
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private static String[] getDitaCommand(Sequence[] sequences) throws XPathException {
+        List<String> args = new ArrayList<>();
+
+        args.add(DITA_EXECUTABLE);
+        if (!sequences[0].isEmpty()) {
+            SequenceIterator iterator = sequences[0].iterate();
+            while (iterator.hasNext()) {
+                args.add(iterator.nextItem().getStringValue());
             }
         }
-        return parameters.toArray(new String[parameters.size()]);
-    }
 
-    private String formatParameter(String name, String value) {
-        return String.format("/%s:%s", name, value);
+        return args.toArray(new String[args.size()]);
     }
 }
