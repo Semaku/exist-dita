@@ -5,7 +5,7 @@
   <groupId>org.exist.xquery.modules</groupId>
   <artifactId>exist-dita</artifactId>
   <packaging>jar</packaging>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
   <name>exist-dita</name>
   <description>eXist DB extension module for DITA processing</description>
 
