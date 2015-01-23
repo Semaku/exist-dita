@@ -1,7 +1,6 @@
 package org.exist.xquery.modules.dita;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang3.SystemUtils;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
@@ -58,14 +57,8 @@ public class RunDitaOTFunction extends BasicFunction {
         ProcessBuilder pb = new ProcessBuilder(getDitaCommand(sequences)).directory(new File(DITA_DIR));
         try {
             Process process = pb.start();
-            LineIterator iterator = IOUtils.lineIterator(process.getInputStream(), UTF_8);
-            while (iterator.hasNext()) {
-                LOG.debug(iterator.next());
-            }
-            iterator = IOUtils.lineIterator(process.getErrorStream(), UTF_8);
-            while (iterator.hasNext()) {
-                LOG.error(iterator.next());
-            }
+            LOG.debug(IOUtils.toString(process.getInputStream(), UTF_8));
+            LOG.error(IOUtils.toString(process.getErrorStream(), UTF_8));
             LOG.info("Completed DITA OT processing" );
         } catch (IOException e) {
             LOG.error("DITA OT process failed", e);
