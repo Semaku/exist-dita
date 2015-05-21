@@ -1,7 +1,9 @@
 package org.exist.xquery.modules.dita;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -18,6 +20,8 @@ import java.util.List;
  * @author Ivan Lagunov
  */
 public class RunDitaOTFunction extends BasicFunction {
+
+    protected static final Logger LOG = Logger.getLogger(RunDitaOTFunction.class);
 
     public static final String UTF_8 = "UTF-8";
     public final static String DITA_HOME = "DITA_HOME";
@@ -58,7 +62,9 @@ public class RunDitaOTFunction extends BasicFunction {
         try {
             Process process = pb.start();
             LOG.debug(IOUtils.toString(process.getInputStream(), UTF_8));
-            LOG.error(IOUtils.toString(process.getErrorStream(), UTF_8));
+            String errors = IOUtils.toString(process.getErrorStream(), UTF_8);
+            if (StringUtils.isNotBlank(errors))
+                LOG.error(errors);
             LOG.info("Completed DITA OT processing" );
         } catch (IOException e) {
             LOG.error("DITA OT process failed", e);
