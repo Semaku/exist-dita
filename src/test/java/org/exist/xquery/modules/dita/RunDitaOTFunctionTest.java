@@ -7,39 +7,43 @@ import org.exist.xquery.value.ValueSequence;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author Ivan Lagunov
  */
 public class RunDitaOTFunctionTest {
 
     @Test
-    public void completeExample() throws XPathException {
-        Sequence input = getRequiredArgumentsSequence();
-        input.add(new StringValue("-o"));
-        input.add(new StringValue("c:\\Temp\\dita\\out"));
-        input.add(new StringValue("-Dargs.debug=yes"));
-        input.add(new StringValue("-Dargs.logdir=c:\\Temp\\dita\\log"));
-        input.add(new StringValue("-Ddita.dir=c:\\Programs\\DITA-OT"));
-        input.add(new StringValue("-Dclean.temp=yes"));
-        input.add(new StringValue("-Dbasedir=c:\\Temp\\dita\\base"));
-        input.add(new StringValue("-temp=c:\\Temp\\dita\\temp"));
-        Sequence result = RunDitaOTFunction.staticEval(new Sequence[]{ input }, null);
+    public void testGood() throws XPathException {
+        List<Sequence> input = getRequiredArgumentsSequence("good.dita");
+        final ValueSequence properties = new ValueSequence(
+                new StringValue("clean.temp=no"),
+                new StringValue("args.debug=yes"),
+                new StringValue("pdf.formatter=fop")
+        );
+        input.get(5).addAll(properties);
+        Sequence result = RunDitaOTFunction.staticEval(input.toArray(new Sequence[0]), null);
         Assert.assertEquals(Sequence.EMPTY_SEQUENCE, result);
     }
 
-    @Test
-    public void minimalExample() throws XPathException {
-        Sequence input = getRequiredArgumentsSequence();
-        Sequence result = RunDitaOTFunction.staticEval(new Sequence[]{ input }, null);
-        Assert.assertEquals(Sequence.EMPTY_SEQUENCE, result);
+    @Test(expected = XPathException.class)
+    public void testBad() throws XPathException {
+        List<Sequence> input = getRequiredArgumentsSequence("bad.dita");
+        RunDitaOTFunction.staticEval(input.toArray(new Sequence[0]), null);
     }
 
-    private Sequence getRequiredArgumentsSequence() throws XPathException {
-        Sequence input = new ValueSequence(true);
-        input.add(new StringValue("-i"));
-        input.add(new StringValue("c:\\Programs\\DITA-OT\\samples\\taskbook\\installing.dita"));
-        input.add(new StringValue("-f"));
-        input.add(new StringValue("pdf"));
-        return input;
+    private List<Sequence> getRequiredArgumentsSequence(String filename) throws XPathException {
+        String resourcesPath = new File("target/test-classes").getAbsolutePath();
+        return Arrays.asList(new Sequence[]{
+                new ValueSequence(new StringValue("pdf")),
+                new ValueSequence(new StringValue(resourcesPath + "/" + filename)),
+                new ValueSequence(new StringValue(resourcesPath + "/out")),
+                new ValueSequence(new StringValue(System.getenv("DITA_HOME"))),
+                new ValueSequence(new StringValue(resourcesPath + "/temp")),
+                new ValueSequence()
+        });
     }
 }

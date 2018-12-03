@@ -13,11 +13,11 @@ import java.util.Map;
  */
 public class DitaModule extends AbstractInternalModule {
 
-    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/dita";
-    public static final String PREFIX = "dita";
-    public final static String RELEASED_IN_VERSION = "eXist-2.1";
+    static final String NAMESPACE_URI = "http://exist-db.org/xquery/dita";
+    static final String PREFIX = "dita";
+    private final static String RELEASED_IN_VERSION = "eXist-2.1";
 
-    public static final FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
             new FunctionDef(RunDitaOTFunction.signature, RunDitaOTFunction.class)
     };
 
