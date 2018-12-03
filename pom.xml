@@ -9,6 +9,10 @@
   <name>exist-dita</name>
   <description>eXist DB extension module for DITA processing</description>
 
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.exist-db</groupId>
