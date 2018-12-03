@@ -28,7 +28,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * This class is used to get message info from message file.
- * 
+ *
  * @author Wu, Zhi Qiang
  */
 public final class MessageUtils {
@@ -58,7 +58,7 @@ public final class MessageUtils {
 
     /**
      * Get singleton instance.
-     * 
+     *
      * @return MessageUtils singleton instance
      */
     public static synchronized MessageUtils getInstance(){
@@ -81,7 +81,7 @@ public final class MessageUtils {
             if (new File(RESOURCE).exists()) {
                 msg = new FileInputStream(new File(RESOURCE));
             } else {
-                msg = this.getClass().getClassLoader().getResourceAsStream(CLASSPATH_RESOURCE);
+                msg = this.getClass().getResourceAsStream("/" + CLASSPATH_RESOURCE);
             }
             if (msg == null) {
                 throw new RuntimeException("Message configuration file not found");
@@ -140,7 +140,7 @@ public final class MessageUtils {
     /**
      * Get the message respond to the given id, if no message found,
      * an empty message with this id will be returned.
-     * 
+     *
      * @param id message ID
      * @return messageBean
      */
@@ -155,12 +155,12 @@ public final class MessageUtils {
         }
         return new MessageBean(hashMessage);
     }
-    
+
     /**
      * Get the message respond to the given id with all of the parameters
      * are replaced by those in the given 'prop', if no message found,
      * an empty message with this id will be returned.
-     * 
+     *
      * @param id id
      * @param params message parameters
      * @return MessageBean
