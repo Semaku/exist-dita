@@ -19,6 +19,10 @@ import java.util.Arrays;
 public class RunDitaOTFunction extends BasicFunction {
 
     private static final Logger LOG = LoggerFactory.getLogger(RunDitaOTFunction.class);
+    private static final Logger LOG_DOST = LoggerFactory.getLogger(Processor.class);
+
+    private static final String ARGS_DEBUG = "args.debug";
+    private static final String ARGS_DEBUG_YES = "yes";
 
     final static FunctionSignature signature = new FunctionSignature(
             new QName("run-dita-ot", DitaModule.NAMESPACE_URI, DitaModule.PREFIX),
@@ -61,11 +65,15 @@ public class RunDitaOTFunction extends BasicFunction {
         Processor p = pf.newProcessor(getArgString(args, 0))
                 .setInput(new File(getArgString(args, 1)))
                 .setOutputDir(new File(getArgString(args, 2)));
+
         if (!args[5].isEmpty()) {
             SequenceIterator iterator = args[5].iterate();
             while (iterator.hasNext()) {
                 String[] prop = iterator.nextItem().getStringValue().split("=", 2);
                 p.setProperty(prop[0], prop[1]);
+                if (ARGS_DEBUG.equals(prop[0]) && ARGS_DEBUG_YES.equals(prop[1])) {
+                    p.setLogger(LOG_DOST);
+                }
             }
         }
         try {

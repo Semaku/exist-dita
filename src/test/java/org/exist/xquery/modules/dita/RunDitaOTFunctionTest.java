@@ -19,12 +19,6 @@ public class RunDitaOTFunctionTest {
     @Test
     public void testGood() throws XPathException {
         List<Sequence> input = getRequiredArgumentsSequence("good.dita");
-        final ValueSequence properties = new ValueSequence(
-                new StringValue("clean.temp=no"),
-                new StringValue("args.debug=yes"),
-                new StringValue("pdf.formatter=fop")
-        );
-        input.get(5).addAll(properties);
         Sequence result = RunDitaOTFunction.staticEval(input.toArray(new Sequence[0]), null);
         Assert.assertEquals(Sequence.EMPTY_SEQUENCE, result);
     }
@@ -32,6 +26,12 @@ public class RunDitaOTFunctionTest {
     @Test(expected = XPathException.class)
     public void testBad() throws XPathException {
         List<Sequence> input = getRequiredArgumentsSequence("bad.dita");
+        final ValueSequence properties = new ValueSequence(
+                new StringValue("clean.temp=no"),
+                new StringValue("args.debug=yes"),
+                new StringValue("pdf.formatter=fop")
+        );
+        input.get(5).addAll(properties);
         RunDitaOTFunction.staticEval(input.toArray(new Sequence[0]), null);
     }
 
