@@ -5,7 +5,7 @@
   <groupId>org.exist.xquery.modules</groupId>
   <artifactId>exist-dita</artifactId>
   <packaging>jar</packaging>
-  <version>2.0.0</version>
+  <version>2.0.1</version>
   <name>exist-dita</name>
   <description>eXist DB extension module for DITA processing</description>
 
@@ -18,18 +18,30 @@
       <groupId>org.exist-db</groupId>
       <artifactId>existdb-core</artifactId>
       <version>2.2</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>net.sf.saxon</groupId>
           <artifactId>Saxon-HE</artifactId>
         </exclusion>
       </exclusions>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.dita-ot</groupId>
       <artifactId>dost</artifactId>
       <version>2.5.4</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.7.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
