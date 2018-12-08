@@ -1,9 +1,5 @@
 package org.dita.dost;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.core.FileAppender;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -188,8 +184,6 @@ public final class Processor {
         args.put("dita.temp.dir", tempDir.getAbsolutePath());
         boolean cleanTemp = true;
 
-        final ch.qos.logback.classic.Logger debugLogger = createDebugLog ? openDebugLogger(tempDir) : null;
-
         try {
             final File buildFile = new File(ditaDir, "build.xml");
             final Project project = new Project();
@@ -197,9 +191,6 @@ public final class Processor {
 
             if (logger != null) {
                 project.addBuildListener(new LoggerListener(logger));
-            }
-            if (debugLogger != null) {
-                project.addBuildListener(new LoggerListener(debugLogger));
             }
 
             project.fireBuildStarted();
@@ -218,9 +209,6 @@ public final class Processor {
             cleanTemp = cleanOnFailure;
             throw new DITAOTException(e);
         } finally {
-            if (debugLogger != null) {
-                closeDebugLogger(debugLogger);
-            }
             if (cleanTemp) {
                 try {
                     FileUtils.forceDelete(tempDir);
@@ -229,33 +217,6 @@ public final class Processor {
                 }
             }
         }
-    }
-
-    private ch.qos.logback.classic.Logger openDebugLogger(File tempDir) {
-        final LoggerContext loggerContext = new LoggerContext();
-
-        final FileAppender fileAppender = new FileAppender();
-        fileAppender.setFile(new File(tempDir.getAbsolutePath() + ".log").getAbsolutePath());
-        fileAppender.setContext(loggerContext);
-        fileAppender.setAppend(false);
-        fileAppender.setImmediateFlush(true);
-
-        final PatternLayoutEncoder encoder = new PatternLayoutEncoder();
-        encoder.setContext(loggerContext);
-        encoder.setPattern("%-4relative [%-5level] %msg%n");
-        encoder.start();
-
-        fileAppender.setEncoder(encoder);
-        fileAppender.start();
-
-        final ch.qos.logback.classic.Logger debugLogger = loggerContext.getLogger(getClass().getCanonicalName() + "_"  + System.currentTimeMillis());
-        debugLogger.addAppender(fileAppender);
-        debugLogger.setLevel(Level.DEBUG);
-        return debugLogger;
-    }
-
-    private void closeDebugLogger(ch.qos.logback.classic.Logger debugLogger) {
-        debugLogger.detachAndStopAllAppenders();
     }
 
     private File getTempDir() {
