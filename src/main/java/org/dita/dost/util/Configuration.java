@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-import org.dita.dost.log.DITAOTJavaLogger;
-import org.dita.dost.log.DITAOTLogger;
 import org.dita.dost.platform.Integrator;
 
 
@@ -30,7 +28,6 @@ import org.dita.dost.platform.Integrator;
  */
 public final class Configuration {
 
-    public static final DITAOTLogger logger = new DITAOTJavaLogger();
     /** Debug mode to aid in development, not intended for end users. */
     public static final boolean DEBUG = false;
 
@@ -44,6 +41,18 @@ public final class Configuration {
     static {
         final Map<String, String> c = new HashMap<>();
 
+        final Properties applicationProperties = new Properties();
+        try (InputStream applicationInputStream = Configuration.class.getResourceAsStream("/" + APP_CONF_PROPERTIES)) {
+            if (applicationInputStream != null) {
+                applicationProperties.load(applicationInputStream);
+                for (final Map.Entry<Object, Object> e: applicationProperties.entrySet()) {
+                    c.put(e.getKey().toString(), e.getValue().toString());
+                }
+            }
+        } catch (final IOException e) {
+            System.err.println(e.getMessage());
+        }
+
         final Properties pluginProperties = new Properties();
         InputStream plugingConfigurationInputStream = null;
         try {
@@ -51,20 +60,20 @@ public final class Configuration {
             if (plugingConfigurationInputStream != null) {
                 pluginProperties.load(plugingConfigurationInputStream);
             } else {
-                final File configurationFile = new File("lib", Integrator.class.getPackage().getName() + File.separator + GEN_CONF_PROPERTIES);
+                final File configurationFile = new File("config", Integrator.class.getPackage().getName() + File.separator + GEN_CONF_PROPERTIES);
                 if (configurationFile.exists()) {
                     plugingConfigurationInputStream = new BufferedInputStream(new FileInputStream(configurationFile));
                     pluginProperties.load(plugingConfigurationInputStream);
                 }
             }
         } catch (final IOException e) {
-            logger.error(e.getMessage(), e) ;
+            System.err.println(e.getMessage());
         } finally {
             if (plugingConfigurationInputStream != null) {
                 try {
                     plugingConfigurationInputStream.close();
                 } catch (final IOException ex) {
-                    logger.error(ex.getMessage(), ex) ;
+                    System.err.println(ex.getMessage()) ;
                 }
             }
         }
@@ -79,20 +88,20 @@ public final class Configuration {
             if (configurationInputStream != null) {
                 properties.load(configurationInputStream);
             } else {
-                final File configurationFile = new File("lib", CONF_PROPERTIES);
+                final File configurationFile = new File("config", CONF_PROPERTIES);
                 if (configurationFile.exists()) {
                     configurationInputStream = new BufferedInputStream(new FileInputStream(configurationFile));
                     properties.load(configurationInputStream);
                 }
             }
         } catch (final IOException e) {
-            logger.error(e.getMessage(), e) ;
+            System.err.println(e.getMessage()) ;
         } finally {
             if (configurationInputStream != null) {
                 try {
                     configurationInputStream.close();
                 } catch (final IOException ex) {
-                    logger.error(ex.getMessage(), ex) ;
+                    System.err.println(ex.getMessage()) ;
                 }
             }
         }
@@ -129,7 +138,7 @@ public final class Configuration {
                 }
             }
         } else {
-            logger.error("Failed to read print transtypes from configuration, using defaults.");
+            System.err.println("Failed to read print transtypes from configuration, using defaults.");
             types.add(TRANS_TYPE_PDF);
         }
         printTranstype = Collections.unmodifiableList(types);
@@ -147,7 +156,7 @@ public final class Configuration {
                 }
             }
         } else {
-            logger.error("Failed to read transtypes from configuration, using empty list.");
+            System.err.println("Failed to read transtypes from configuration, using empty list.");
         }
         transtypes = Collections.unmodifiableList(types);
     }
@@ -181,7 +190,7 @@ public final class Configuration {
                 if (fs != null) {
                     for (final String pairs : fs.split(";")) {
                         final String[] tokens = pairs.split("=");
-                        Map<String, Boolean> fm = f.containsKey(format) ? f.get(format) : new HashMap<String, Boolean>();
+                        Map<String, Boolean> fm = f.getOrDefault(format, new HashMap<>());
                         fm.put(tokens[0], Boolean.parseBoolean(tokens[1]));
                         f.put(format, fm);
                     }

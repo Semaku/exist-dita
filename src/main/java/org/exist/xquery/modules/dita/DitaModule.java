@@ -18,11 +18,7 @@ public class DitaModule extends AbstractInternalModule {
     private final static String RELEASED_IN_VERSION = "eXist-2.1";
 
     private static final FunctionDef[] functions = {
-            new FunctionDef(RunDitaOTFunction.signature, RunDitaOTFunction.class),
-            new FunctionDef(LogFunction.signatures[0], LogFunction.class),
-            new FunctionDef(LogFunction.signatures[1], LogFunction.class),
-            new FunctionDef(LogFunction.signatures[2], LogFunction.class),
-            new FunctionDef(LogFunction.signatures[3], LogFunction.class)
+            new FunctionDef(RunDitaOTFunction.signature, RunDitaOTFunction.class)
     };
 
     public DitaModule(Map<String, List<?>> parameters) {
