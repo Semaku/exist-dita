@@ -21,6 +21,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>3.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.dita-ot</groupId>
       <artifactId>dost</artifactId>
       <version>3.5.4</version>

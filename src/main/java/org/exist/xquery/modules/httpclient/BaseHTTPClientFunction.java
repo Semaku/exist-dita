@@ -141,7 +141,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction {
 
         final HttpClient http = HTTPClientModule.httpClient;
 
-        FeaturesAndProperties defaultFeaturesAndProperties = (FeaturesAndProperties) context.getXQueryContextVar(HTTP_MODULE_PERSISTENT_OPTIONS);
+        FeaturesAndProperties defaultFeaturesAndProperties = (FeaturesAndProperties) context.getAttribute(HTTP_MODULE_PERSISTENT_OPTIONS);
         if (defaultFeaturesAndProperties != null) {
             if (parserFeatures == null) {
                 parserFeatures = defaultFeaturesAndProperties.getFeatures();
@@ -157,7 +157,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction {
             //use existing state?
             if (persistState) {
                 //get existing state
-                final HttpState state = (HttpState) context.getXQueryContextVar(HTTP_MODULE_PERSISTENT_STATE);
+                final HttpState state = (HttpState) context.getAttribute(HTTP_MODULE_PERSISTENT_STATE);
                 if (state != null) {
                     http.setState(state);
                 }
@@ -170,7 +170,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction {
 
             //persist state?
             if (persistState) {
-                context.setXQueryContextVar(HTTP_MODULE_PERSISTENT_STATE, http.getState());
+                context.setAttribute(HTTP_MODULE_PERSISTENT_STATE, http.getState());
             }
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);

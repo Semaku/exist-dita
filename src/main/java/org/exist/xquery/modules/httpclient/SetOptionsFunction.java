@@ -56,7 +56,7 @@ public class SetOptionsFunction extends BaseHTTPClientFunction {
                 featuresAndProperties = getParserFeaturesAndProperties(((NodeValue)args[0].itemAt(0)).getNode());
             }
 
-            context.setXQueryContextVar( HTTP_MODULE_PERSISTENT_OPTIONS, featuresAndProperties );
+            context.setAttribute( HTTP_MODULE_PERSISTENT_OPTIONS, featuresAndProperties );
         }
 
         return( Sequence.EMPTY_SEQUENCE );
