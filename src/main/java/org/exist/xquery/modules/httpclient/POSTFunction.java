@@ -30,10 +30,10 @@ import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.exist.util.io.FastByteArrayOutputStream;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -135,8 +135,8 @@ public class POSTFunction extends BaseHTTPClientFunction {
 
 
 
-                try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
-                        final OutputStreamWriter osw = new OutputStreamWriter(baos, UTF_8)) {
+                try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
+                    final OutputStreamWriter osw = new OutputStreamWriter(baos, UTF_8)) {
 
                     final SAXSerializer sax = new SAXSerializer(osw, new Properties());
 

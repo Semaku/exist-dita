@@ -26,12 +26,12 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.IndentingXMLWriter;
 import org.exist.xquery.FunctionSignature;
@@ -88,7 +88,7 @@ public class PUTFunction extends BaseHTTPClientFunction
         super( context, signature );
     }
 
-	
+
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
         Sequence response = null;
@@ -110,11 +110,11 @@ public class PUTFunction extends BaseHTTPClientFunction
         String indentLevel = (args.length >= 5 && !args[4].isEmpty()) ? args[4].itemAt(0).toString() : null;
 
         RequestEntity entity = null;
-        
+
         if( Type.subTypeOf( payload.getType(), Type.NODE ) ) {
 	        //serialize the node to SAX
 
-            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
+            try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
                  final OutputStreamWriter osw = new OutputStreamWriter(baos, UTF_8)) {
 
                 IndentingXMLWriter xmlWriter = new IndentingXMLWriter(osw);
@@ -140,10 +140,10 @@ public class PUTFunction extends BaseHTTPClientFunction
                 throw new XPathException(this, e);
             }
 
-        } else if( Type.subTypeOf( payload.getType(), Type.BASE64_BINARY ) ) { 
+        } else if( Type.subTypeOf( payload.getType(), Type.BASE64_BINARY ) ) {
 
         	entity = new ByteArrayRequestEntity(payload.toJavaObject(byte[].class));
-        	
+
         } else {
 
             try {
