@@ -8,8 +8,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Ivan Lagunov
@@ -18,32 +16,34 @@ public class RunDitaOTFunctionTest {
 
     @Test
     public void testGood() throws XPathException {
-        List<Sequence> input = getRequiredArgumentsSequence("good.dita");
-        Sequence result = RunDitaOTFunction.staticEval(input.toArray(new Sequence[0]), null);
+        Sequence input = getRequiredArgumentsSequence("good.dita");
+        input.add(new StringValue("-Dclean.temp=no"));
+        input.add(new StringValue("-Dargs.debug=yes"));
+        input.add(new StringValue("-Dpdf.formatter=fop"));
+        Sequence result = RunDitaOTFunction.staticEval(new Sequence[]{ input }, null);
         Assert.assertEquals(Sequence.EMPTY_SEQUENCE, result);
     }
 
-    @Test(expected = XPathException.class)
+    @Test
     public void testBad() throws XPathException {
-        List<Sequence> input = getRequiredArgumentsSequence("bad.dita");
-        final ValueSequence properties = new ValueSequence(
-                new StringValue("clean.temp=no"),
-                new StringValue("args.debug=yes"),
-                new StringValue("pdf.formatter=fop")
-        );
-        input.get(5).addAll(properties);
-        RunDitaOTFunction.staticEval(input.toArray(new Sequence[0]), null);
+        Sequence input = getRequiredArgumentsSequence("bad.dita");
+        Sequence result = RunDitaOTFunction.staticEval(new Sequence[]{ input }, null);
+        Assert.assertEquals(Sequence.EMPTY_SEQUENCE, result);
     }
 
-    private List<Sequence> getRequiredArgumentsSequence(String filename) throws XPathException {
+    private Sequence getRequiredArgumentsSequence(String filename) throws XPathException {
         String resourcesPath = new File("target/test-classes").getAbsolutePath();
-        return Arrays.asList(new Sequence[]{
-                new ValueSequence(new StringValue("pdf")),
-                new ValueSequence(new StringValue(resourcesPath + "/" + filename)),
-                new ValueSequence(new StringValue(resourcesPath + "/out")),
-                new ValueSequence(new StringValue(System.getenv("DITA_HOME"))),
-                new ValueSequence(new StringValue(resourcesPath + "/temp")),
-                new ValueSequence()
-        });
+        Sequence input = new ValueSequence(true);
+        input.add(new StringValue("-i"));
+        input.add(new StringValue(resourcesPath + "/" + filename));
+        input.add(new StringValue("-f"));
+        input.add(new StringValue("pdf"));
+        input.add(new StringValue("-o"));
+        input.add(new StringValue(resourcesPath + "/out"));
+        input.add(new StringValue("-temp"));
+        input.add(new StringValue(resourcesPath + "/temp"));
+        input.add(new StringValue("-Ddita.dir=" + System.getenv("DITA_HOME")));
+        input.add(new StringValue("-Djava.awt.headless=true"));
+        return input;
     }
 }
