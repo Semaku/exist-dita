@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A function to run DITA OT processing.
@@ -28,6 +29,7 @@ public class RunDitaOTFunction extends BasicFunction {
     public final static String DITA_DIR = System.getenv(DITA_HOME);
     public final static String DITA_EXECUTABLE = DITA_DIR + File.separatorChar + "bin" + File.separatorChar +
             "dita" + (SystemUtils.IS_OS_WINDOWS ? ".bat" : "");
+    public final static int DITA_TIMEOUT_DEFAULT_SEC = 300;
 
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("run-dita-ot", DitaModule.NAMESPACE_URI, DitaModule.PREFIX),
@@ -36,6 +38,9 @@ public class RunDitaOTFunction extends BasicFunction {
                     new FunctionParameterSequenceType("parameters", Type.STRING, Cardinality.ZERO_OR_MORE,
                             "The parameters in format 'ant-parameter-name=value'. " +
                                     "The documentation is available here: https://www.dita-ot.org/3.6/parameters/parameters_intro.html"
+                    ),
+                    new FunctionParameterSequenceType("timeout", Type.INTEGER, Cardinality.ZERO_OR_ONE,
+                            "The timeout in seconds to wait for DITA-OT process to finish. The default is 300 seconds."
                     )
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.MANY, "DITA-OT error and debug output as a sequence of 2 strings")
@@ -66,9 +71,12 @@ public class RunDitaOTFunction extends BasicFunction {
             String debugOutput = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
             if (StringUtils.isNotBlank(debugOutput)) LOG.debug(debugOutput);
             LOG.info("Completed DITA OT processing");
+            int timeout = getProcessTimeout(sequences);
+            boolean processFinished = process.waitFor(timeout, TimeUnit.SECONDS);
+            if (!processFinished) throw new XPathException("The DITA OT process has timed out, please review your DITA files or consider increasing the timeout. The current timeout is " + timeout + " seconds.");
             if (process.exitValue() != 0) throw new XPathException(errorOutput);
             return new ValueSequence(new StringValue(errorOutput), new StringValue(debugOutput));
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             LOG.error("DITA OT process failed", e);
             throw new XPathException(e.getLocalizedMessage());
         }
@@ -86,5 +94,15 @@ public class RunDitaOTFunction extends BasicFunction {
         }
 
         return args.toArray(new String[0]);
+    }
+
+    private static int getProcessTimeout(Sequence[] sequences) {
+        try {
+            if (sequences.length > 1 && !sequences[1].isEmpty()) {
+                return Integer.parseInt(sequences[1].itemAt(0).getStringValue());
+            }
+        } catch (Exception ignored) {
+        }
+        return DITA_TIMEOUT_DEFAULT_SEC;
     }
 }
