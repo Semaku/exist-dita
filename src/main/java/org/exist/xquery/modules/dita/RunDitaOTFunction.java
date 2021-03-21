@@ -1,18 +1,19 @@
 package org.exist.xquery.modules.dita;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * A function to run DITA OT processing.
@@ -37,7 +38,7 @@ public class RunDitaOTFunction extends BasicFunction {
                                     "The documentation is available here: https://www.dita-ot.org/3.6/parameters/parameters_intro.html"
                     )
             },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "DITA-OT error messages")
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.MANY, "DITA-OT error and debug output as a sequence of 2 strings")
     );
 
     public RunDitaOTFunction(XQueryContext context) {
@@ -60,20 +61,16 @@ public class RunDitaOTFunction extends BasicFunction {
         ProcessBuilder pb = new ProcessBuilder(getDitaCommand(sequences)).directory(new File(DITA_DIR));
         try {
             Process process = pb.start();
-            LOG.debug(IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8));
-            List<StringValue> errors = parseErrors(process.getErrorStream());
-            errors.forEach(LOG::error);
+            String errorOutput = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
+            if (StringUtils.isNotBlank(errorOutput)) LOG.error(errorOutput);
+            String debugOutput = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
+            if (StringUtils.isNotBlank(debugOutput)) LOG.debug(debugOutput);
             LOG.info("Completed DITA OT processing");
-            return !errors.isEmpty() ? new ValueSequence(errors.toArray(new Item[0])) : Sequence.EMPTY_SEQUENCE;
+            if (process.exitValue() != 0) throw new XPathException(errorOutput);
+            return new ValueSequence(new StringValue(errorOutput), new StringValue(debugOutput));
         } catch (IOException e) {
             LOG.error("DITA OT process failed", e);
-            return new StringValue(e.getLocalizedMessage());
-        }
-    }
-
-    private static List<StringValue> parseErrors(InputStream errorStream) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
-            return reader.lines().map(StringValue::new).collect(Collectors.toList());
+            throw new XPathException(e.getLocalizedMessage());
         }
     }
 
