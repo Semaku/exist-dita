@@ -9,6 +9,8 @@ import org.junit.Test;
 
 import java.io.File;
 
+import static org.hamcrest.CoreMatchers.containsString;
+
 /**
  * @author Ivan Lagunov
  */
@@ -28,7 +30,9 @@ public class RunDitaOTFunctionTest {
     public void testBad() throws XPathException {
         Sequence input = getRequiredArgumentsSequence("bad.dita");
         Sequence result = RunDitaOTFunction.staticEval(new Sequence[]{ input }, null);
-        Assert.assertEquals(Sequence.EMPTY_SEQUENCE, result);
+        Assert.assertEquals(2, result.getItemCount());
+        Assert.assertThat(result.getStringValue(),
+                containsString("[DOTJ066E][ERROR] No id attribute on topic type element topic. Using generated id "));
     }
 
     private Sequence getRequiredArgumentsSequence(String filename) throws XPathException {
