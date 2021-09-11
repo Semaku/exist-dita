@@ -48,7 +48,6 @@ public class ContentExtraction {
     }
 
     public void extractContentAndMetadata(BinaryValue binaryValue, ContentHandler contentHandler) throws IOException, SAXException, ContentExtractionException {
-
         Metadata metadata = new Metadata();
 
         try {
@@ -60,7 +59,6 @@ public class ContentExtraction {
 
     public void extractContentAndMetadata(BinaryValue binaryValue, Receiver receiver)
             throws IOException, SAXException, ContentExtractionException {
-
         extractContentAndMetadata(binaryValue, new SAXToReceiver(receiver));
     }
 

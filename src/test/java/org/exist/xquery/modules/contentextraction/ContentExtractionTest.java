@@ -5,10 +5,10 @@ import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.BinaryValue;
-import org.exist.xquery.value.BinaryValueFromBinaryString;
 import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
@@ -38,6 +38,10 @@ public class ContentExtractionTest {
         Document document = builder.getDocument();
 
         Assert.assertNotNull(document);
+        Assert.assertEquals("html", document.getDocumentElement().getNodeName());
+        final NamedNodeMap nPagesAttributes = document.getElementsByTagName("meta").item(7).getAttributes();
+        Assert.assertEquals("xmpTPg:NPages", nPagesAttributes.getNamedItem("name").getNodeValue());
+        Assert.assertEquals("3", nPagesAttributes.getNamedItem("content").getNodeValue());
         printDocument(document, System.out);
     }
 
