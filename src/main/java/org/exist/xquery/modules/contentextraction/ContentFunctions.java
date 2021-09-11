@@ -70,7 +70,7 @@ public class ContentFunctions extends BasicFunction {
 
         try {
             if (isCalledAs("get-metadata")) {
-                ce.extractMetadata((BinaryValue) args[0].itemAt(0), (ContentHandler) builder);
+                ce.extractMetadata((BinaryValue) args[0].itemAt(0), builder);
             } else {
                 ce.extractContentAndMetadata((BinaryValue) args[0].itemAt(0), (ContentHandler) builder);
             }

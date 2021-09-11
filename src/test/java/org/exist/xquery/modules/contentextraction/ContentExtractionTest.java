@@ -9,6 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
@@ -37,12 +38,31 @@ public class ContentExtractionTest {
         ce.extractMetadata(value, builder);
         Document document = builder.getDocument();
 
+        metadataAssertions(document);
+        printDocument(document, System.out);
+    }
+
+    @Test
+    public void testContentAndMetadata() throws IOException, ContentExtractionException, SAXException, XPathException, TransformerException {
+        BinaryValue value = loadBinaryValue();
+
+        DocumentBuilderReceiver builder = new DocumentBuilderReceiver();
+        ContentExtraction ce = new ContentExtraction();
+        ce.extractContentAndMetadata(value, (ContentHandler) builder);
+        Document document = builder.getDocument();
+
+        metadataAssertions(document);
+        int nPages = document.getElementsByTagName("body").item(0).getChildNodes().getLength();
+        Assert.assertTrue(nPages > 0);
+        printDocument(document, System.out);
+    }
+
+    private void metadataAssertions(Document document) {
         Assert.assertNotNull(document);
         Assert.assertEquals("html", document.getDocumentElement().getNodeName());
         final NamedNodeMap nPagesAttributes = document.getElementsByTagName("meta").item(7).getAttributes();
         Assert.assertEquals("xmpTPg:NPages", nPagesAttributes.getNamedItem("name").getNodeValue());
         Assert.assertEquals("3", nPagesAttributes.getNamedItem("content").getNodeValue());
-        printDocument(document, System.out);
     }
 
     private BinaryValue loadBinaryValue() throws IOException, XPathException {
