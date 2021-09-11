@@ -5,6 +5,7 @@ import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.BinaryValueFromBinaryString;
 import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Document;

@@ -40,14 +40,12 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.xquery.modules.contentextraction;
+package org.exist.xquery.value;
 
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.log4j.Logger;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.BinaryValue;
-import org.exist.xquery.value.BinaryValueType;
 
 import java.io.*;
 
